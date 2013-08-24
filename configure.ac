@@ -582,6 +582,26 @@ if test x$ipv6 = xtrue; then
   fi
 fi
 
+dnl Check for TPROXY support
+
+AC_ARG_ENABLE(tproxy,
+ AC_HELP_STRING([--enable-tproxy],[enable TPROXY support]),
+ [case "${enableval}" in
+   yes) tproxy=true ;;
+    no) tproxy=false ;;
+     *) AC_MSG_ERROR(bad value ${enableval} for --enable-tproxy) ;;
+  esac],[tproxy=false])
+
+if test x$tproxy = xtrue; then
+  AC_CACHE_CHECK([for IP_TRANSPARENT declaration], ac_cv_have_decl_IP_TRANSPARENT,
+    [AC_CHECK_DECL(IP_TRANSPARENT,,,[[#include <sys/socket.h>
+#include <netinet/in.h>]])])
+
+  if test "$ac_cv_have_decl_IP_TRANSPARENT" = yes; then
+    AC_DEFINE(HAVE_TPROXY,1,[Whether to enable TPROXY support])
+  fi
+fi
+
 # disable mmap by default; if a mmapped file gets truncated, the process gets a SIGBUS signal
 # on reading the truncated area which we can't handle (yet).
 # lighttpd may always use mmap with files it owns (created tmp files)

@@ -293,6 +293,15 @@ static int network_server_init(server *srv, buffer *host_token, specific_config 
 			freeaddrinfo(res);
 		}
 		srv_socket->addr.ipv6.sin6_port = htons(port);
+#ifdef HAVE_TPROXY
+		if (s->tproxy) {
+			val = 1;
+			if (-1 == setsockopt(srv_socket->fd, SOL_IP, IP_TRANSPARENT, &val, sizeof(val))) {
+				log_error_write(srv, __FILE__, __LINE__, "ss", "socketsockopt(IP_TRANSPARENT) failed:", strerror(errno));
+				goto error_free_socket;
+			}
+		}
+#endif
 		addr_len = sizeof(struct sockaddr_in6);
 		break;
 #endif
@@ -323,7 +332,15 @@ static int network_server_init(server *srv, buffer *host_token, specific_config 
 			memcpy(&(srv_socket->addr.ipv4.sin_addr.s_addr), he->h_addr_list[0], he->h_length);
 		}
 		srv_socket->addr.ipv4.sin_port = htons(port);
-
+#ifdef HAVE_TPROXY
+		if (s->tproxy) {
+			val = 1;
+			if (-1 == setsockopt(srv_socket->fd, SOL_IP, IP_TRANSPARENT, &val, sizeof(val))) {
+				log_error_write(srv, __FILE__, __LINE__, "ss", "socketsockopt(IP_TRANSPARENT) failed:", strerror(errno));
+				goto error_free_socket;
+			}
+		}
+#endif
 		addr_len = sizeof(struct sockaddr_in);
 
 		break;

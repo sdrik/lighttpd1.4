@@ -321,6 +321,10 @@ typedef struct {
 #ifdef USE_OPENSSL
 	SSL_CTX *ssl_ctx;
 #endif
+
+#ifdef HAVE_TPROXY
+	unsigned short tproxy;
+#endif
 } specific_config;
 
 /* the order of the items should be the same as they are processed

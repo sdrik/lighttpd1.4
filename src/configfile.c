@@ -108,6 +108,15 @@ static int config_insert(server *srv) {
 		{ "ssl.disable-client-renegotiation", NULL, T_CONFIG_BOOLEAN, T_CONFIG_SCOPE_SERVER },/* 65 */
 		{ "ssl.honor-cipher-order",      NULL, T_CONFIG_BOOLEAN, T_CONFIG_SCOPE_SERVER },     /* 66 */
 
+#ifdef HAVE_TPROXY
+		{ "server.tproxy",               NULL, T_CONFIG_BOOLEAN, T_CONFIG_SCOPE_CONNECTION }, /* 67 */
+#else
+		{ "server.tproxy",
+		  "Your system lacks proper TPROXY support."
+		  "Please remove server.tproxy from your config.",
+		  T_CONFIG_UNSUPPORTED, T_CONFIG_SCOPE_UNSET }, /* 67 */
+#endif
+
 		{ "server.host",                 "use server.bind instead", T_CONFIG_DEPRECATED, T_CONFIG_SCOPE_UNSET },
 		{ "server.docroot",              "use server.document-root instead", T_CONFIG_DEPRECATED, T_CONFIG_SCOPE_UNSET },
 		{ "server.virtual-root",         "load mod_simple_vhost and use simple-vhost.server-root instead", T_CONFIG_DEPRECATED, T_CONFIG_SCOPE_UNSET },
@@ -203,6 +212,9 @@ static int config_insert(server *srv) {
 		s->ssl_verifyclient_depth = 9;
 		s->ssl_verifyclient_export_cert = 0;
 		s->ssl_disable_client_renegotiation = 1;
+#ifdef HAVE_TPROXY
+		s->tproxy         = 0;
+#endif
 
 		cv[2].destination = s->errorfile_prefix;
 
@@ -262,6 +274,10 @@ static int config_insert(server *srv) {
 		cv[59].destination = s->ssl_verifyclient_username;
 		cv[60].destination = &(s->ssl_verifyclient_export_cert);
 		cv[65].destination = &(s->ssl_disable_client_renegotiation);
+
+#ifdef HAVE_TPROXY
+		cv[67].destination = &(s->tproxy);
+#endif
 
 		srv->config_storage[i] = s;
 
